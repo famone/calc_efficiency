@@ -32,10 +32,12 @@ const additionTonn = document.querySelector('#additionTonn')
 const rangeBlockInp = document.querySelectorAll('.range-block-inp input[type="number"]')
 const rangeBlockSlider = document.querySelectorAll('.range-block-inp input[type="range"]')
 
-getRange()
-calculate()
+document.addEventListener('DOMContentLoaded', function(){
+    getRange()
+    calculate()
+})
 
-function calculate(){
+async function calculate(){
    
     yearRun.innerHTML = parseFloat(distance.value) * parseFloat(dailyCargoes.value) * parseFloat(yearDays.value) * 2
     yearFuel.innerHTML = (parseFloat(yearRun.innerText) / 100 * parseInt(fuelLitter.value) * parseInt(fuelRate.value)).toFixed(2)
@@ -55,21 +57,59 @@ function calculate(){
 
     additionEconomy.innerHTML = (parseFloat(yearEconomy.innerText) * parseInt(years.value)).toFixed(2)
     additionTonn.innerHTML = (parseFloat(additionVolume.innerText) * parseInt(carsAmount.value) * parseInt(years.value)).toFixed(2)
+
+    formatNumbers()
     
+}
+
+// форматирование результата к тысячам
+function formatNumbers(){
+    const resItem = document.querySelectorAll('h4')
+    resItem.forEach((item) => {
+        item.innerHTML = parseFloat(item.innerText).toLocaleString()
+    })
+}
+
+// валидация числовых полей
+function validateFields(text_field){
+    const parent_block = text_field.parentNode
+    const range_field = text_field.parentNode.querySelector('input[type="range"]')
+    if(parent_block.parentNode.querySelector('span')){
+        parent_block.parentNode.querySelector('span').remove()
+    }
+    const err_message = document.createElement('span')
+    err_message.innerText = 'Не соответствует допустимым параметрам'
+    if(parseInt(text_field.value) > parseInt(range_field.max) || parseInt(text_field.value) < parseInt(range_field.min)){
+        parent_block.classList.add('errInp')
+        parent_block.parentNode.appendChild(err_message)
+        return false
+    }else{
+        parent_block.classList.remove('errInp')
+        return true
+    }
 }
 
 // экшен на действия текстовых полей
 rangeBlockInp.forEach((item, index) => {
     item.addEventListener('input', function(){
+        if(!validateFields(item)){
+            return
+        }
         calculate();
         rangeBlockSlider[index].value = item.value
         getRange()
     })
 })
 
+
 // экшен на действия ползунков
 rangeBlockSlider.forEach((item, index) => {
     item.addEventListener('input', function(){
+        const parent_block = item.parentNode
+        parent_block.classList.remove('errInp')
+        if(parent_block.parentNode.querySelector('span')){
+            parent_block.parentNode.querySelector('span').remove()
+        }
         calculate();
         rangeBlockInp[index].value = item.value
         getRange()
